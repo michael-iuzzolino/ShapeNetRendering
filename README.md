@@ -1,3 +1,3 @@
 # ShapeNetRendering
 
-![](render_sample.gif)
+![](sample_render.gif)
