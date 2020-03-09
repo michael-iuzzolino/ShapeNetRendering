@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 from IPython.display import HTML
 
-matplotlib.rcParams['animation.embed_limit'] = 2**128
+matplotlib.rcParams['animation.embed_limit'] = 2**32
 
 import torch
 from torchvision.utils import make_grid
@@ -42,10 +42,14 @@ def read_image(path, same_size=True):
 def toAnimation(imgs, *args, **kwargs):
     animator = FrameAnimator(imgs, *args, **kwargs)
     
-    result = animator()
+    animation_obj = animator()
     if kwargs.get("savepath", False):
-        animator.save(kwargs['savepath'], kwargs.get('fps', 15))
-    return result
+        save_path = kwargs['savepath']
+        print(f"Saving to {save_path}...")
+        animator.save(save_path, kwargs.get('fps', 15))
+    
+    print("Fin.")
+    return animation_obj
     
 class FrameAnimator(object):
     def __init__(self, imgs, interval=100, blit=True, text=None, figsize=(6,6), mode='jsHTML', **kwargs):
@@ -91,6 +95,8 @@ class FrameAnimator(object):
         
         plt.tight_layout()
         plt.close() # prevent fig from showing
+        
+        print("Building animator...")
         self.anim = animation.FuncAnimation(fig, animate, 
                                        init_func=init, 
                                        frames=len(imgs),
@@ -98,15 +104,20 @@ class FrameAnimator(object):
                                        blit=blit)
         
     def __call__(self):
+        print("Generating animation object...")
         if self.mode == 'HTML':
-            return HTML(self.anim.to_html5_video())
+            anim_obj = HTML(self.anim.to_html5_video())
         elif self.mode == 'jsHTML':
-            return HTML(self.anim.to_jshtml())
-        
-    def __init_writer(self, fps):
+            anim_obj = HTML(self.anim.to_jshtml())
+        return anim_obj
+    
+    def _init_mp4_writer(self, fps):
         Writer = animation.writers['ffmpeg']
         self.writer = Writer(fps=fps, metadata=dict(artist='Me'), bitrate=1800)
         
     def save(self, save_path, fps=15): 
-        self.__init_writer(fps)
-        self.anim.save(save_path, writer=self.writer)
+        if save_path.endswith('gif'):
+            self.anim.save(save_path, writer='imagemagick', fps=fps)
+        else:
+            self._init_mp4_writer(fps)
+            self.anim.save(save_path, writer=self.writer)

@@ -31,14 +31,12 @@ class ShapeNetHandler(object):
         for syn_id, name in self.synset_to_name_lookup.items():
             print(f"SynsetID: {syn_id} -- Name: {name}") 
     
-    def sample_obj(self, category_name='', verbose=True):
+    def sample_obj(self, category_name=''):
         synsetIDs = [ele for ele in list(self.objs_paths.keys()) if category_name in self.synset_to_name_lookup[ele]]
         rand_synsetID = np.random.choice(synsetIDs)
         rand_name = self.synset_to_name_lookup[rand_synsetID]
         synsetID_objs = self.objs_paths[rand_synsetID]
         rand_obj_path = np.random.choice(synsetID_objs)
         instance_id = rand_obj_path.split(os.path.sep)[-3]
-        if verbose:
-            print(f"SynsetID: {rand_synsetID} -- InstanceID: {instance_id} -- Name: {rand_name}")
-            
-        return rand_obj_path, rand_synsetID, instance_id
+
+        return rand_obj_path, rand_synsetID, instance_id, rand_name
