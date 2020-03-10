@@ -6,7 +6,7 @@ class ModelHandler:
     def __init__(self, args, target):
         self.args = args
         self.target = target
-        self.rgb_color = [0.0, 0.0, 0.0]
+        self.semantic_rgb_color = [1.0, 1.0, 1.0]
 
         # Load model - specify as RGB model
         RGB_model = self._import_model_obj(args, target=target)
@@ -60,7 +60,7 @@ class ModelHandler:
 
     def _make_emission_material(self):
         emission_mat = bpy.data.materials.new(name="Material")
-        emission_mat.diffuse_color = self.rgb_color
+        emission_mat.diffuse_color = self.semantic_rgb_color
         emission_mat.diffuse_shader = 'LAMBERT'
         emission_mat.use_shadeless = True
         return emission_mat
