@@ -3,10 +3,10 @@ import glob
 import numpy as np
 
 class ModelHandler:
-    def __init__(self, args, target, rgb_color):
+    def __init__(self, args, target):
         self.args = args
         self.target = target
-        self.rgb_color = rgb_color
+        self.rgb_color = [0.0, 0.0, 0.0]
 
         # Load model - specify as RGB model
         RGB_model = self._import_model_obj(args, target=target)
@@ -15,19 +15,36 @@ class ModelHandler:
         self._modify_mesh(RGB_model, args)
 
         # Create emission model as copy with new mats from RGB model
-        emission_model = self._make_emission_model(rgb_color)
+        emission_model = self._make_emission_model()
 
         # Assign models to lookup
         self.model_objects = {"RGB_model" : RGB_model, "emission_model" : emission_model}
 
-    def _make_emission_model(self, rgb_color):
-        bpy.ops.object.duplicate_move(OBJECT_OT_duplicate={"linked":False, "mode":'TRANSLATION'}, TRANSFORM_OT_translate={"value":(0,0,0), "constraint_axis":(False, False, False), "constraint_orientation":'GLOBAL', "mirror":False, "proportional":'DISABLED', "proportional_edit_falloff":'SMOOTH', "proportional_size":1, "snap":False, "snap_target":'CLOSEST', "snap_point":(0, 0, 0), "snap_align":False, "snap_normal":(0, 0, 0), "gpencil_strokes":False, "texture_space":False, "remove_on_cancel":False, "release_confirm":False, "use_accurate":False})
+    def _make_emission_model(self):
+        bpy.ops.object.duplicate_move(OBJECT_OT_duplicate={"linked":False, "mode":'TRANSLATION'}, 
+                                      TRANSFORM_OT_translate={"value":(0,0,0), 
+                                                              "constraint_axis":(False, False, False), 
+                                                              "constraint_orientation":'GLOBAL', 
+                                                              "mirror":False, 
+                                                              "proportional":'DISABLED', 
+                                                              "proportional_edit_falloff":'SMOOTH', 
+                                                              "proportional_size":1, 
+                                                              "snap":False, 
+                                                              "snap_target":'CLOSEST', 
+                                                              "snap_point":(0, 0, 0), 
+                                                              "snap_align":False, 
+                                                              "snap_normal":(0, 0, 0), 
+                                                              "gpencil_strokes":False, 
+                                                              "texture_space":False, 
+                                                              "remove_on_cancel":False, 
+                                                              "release_confirm":False, 
+                                                              "use_accurate":False})
         objects = []
         for object in bpy.context.selected_objects:
             object.name = 'emission_model__{}'.format(object.name)
             objects.append(object)
 
-        emission_mat = self._make_emission_material(rgb_color)
+        emission_mat = self._make_emission_material()
         self._set_material(objects, emission_mat)
 
         return objects
@@ -41,10 +58,9 @@ class ModelHandler:
                 for i in range(len(object.data.materials)):
                     object.data.materials[i] = material
 
-    def _make_emission_material(self, rgb_color):
-        rgb_color = [np.random.uniform() for _ in range(3)]
+    def _make_emission_material(self):
         emission_mat = bpy.data.materials.new(name="Material")
-        emission_mat.diffuse_color = (rgb_color)
+        emission_mat.diffuse_color = self.rgb_color
         emission_mat.diffuse_shader = 'LAMBERT'
         emission_mat.use_shadeless = True
         return emission_mat
