@@ -3,6 +3,12 @@ import bpy
 _LAMP_2_ENERGY = 0.05 # 0.015
 
 def setup(args):
+    # Set render engine
+    try:
+        bpy.context.scene.render.engine = args.render_engine.upper()
+    except:
+        bpy.context.scene.render.engine = "BLENDER_RENDER"
+    
     scene = bpy.context.scene
     scene.render.resolution_x = args.resolution
     scene.render.resolution_y = args.resolution
