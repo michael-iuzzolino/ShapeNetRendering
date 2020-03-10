@@ -31,7 +31,12 @@ def combine_imgs(imgs):
         combined_imgs.append(row_img)
     return combined_imgs
 
-def read_image(path, same_size=True):
+def read_image(path):
+    image = imageio.imread(path)
+    img_RGB = image[:,:,:3]
+    return img_RGB
+
+def read_image_BACKUP(path, same_size=True):
     image = imageio.imread(path)
     img_RGB = image[:,:,:3]
     img_segmentation = image[:,:,3]
