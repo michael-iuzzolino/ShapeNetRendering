@@ -1,5 +1,6 @@
 import os
 import math
+import numpy as np
 
 _CMAP = [[0.83106498, 0.23844675, 0.30880431],
          [0.94732795, 0.412995  , 0.26643599],
@@ -37,7 +38,7 @@ def setup_angles(args):
         elevations += x_i
     # --------------------------------------------------------
     return azimuth_stepsize, elevations
-    
+
 def setup_filepaths(scene, sensor_outputs, args):
     model_identifier = os.path.split(os.path.split(args.obj)[0])[1]
     filepath = os.path.join(args.output_folder, model_identifier)
@@ -48,16 +49,20 @@ def setup_filepaths(scene, sensor_outputs, args):
 
     return filepath
 
-def euler_to_xyz(azimuth_i, normalize=True):
+def modulate_cam_distance(azimuth_i, cam_amp=0.25, cam_shift=1.5, cam_phase=0.25):
+    cam_dist = cam_amp*math.sin(math.radians(azimuth_i)/float(cam_phase)) + cam_shift
+    return cam_dist
+
+def euler_to_xyz(azimuth_i, normalize=True, z_phase=0.5, z_amp=0.5, z_shift=0.0):
     A = math.radians(azimuth_i)
     E = math.radians(azimuth_i)
 
     x = math.sin(A)
     y = math.cos(A)
-    z = 0.5*math.sin(E*2)
+    z = z_amp*math.sin(E/float(z_phase)) + z_shift
     if normalize:
         d = math.sqrt(x**2 + y**2 + z**2)
         x /= d
         y /= d
         z /= d
-    return x, y, z
+    return np.array([x, y, z])

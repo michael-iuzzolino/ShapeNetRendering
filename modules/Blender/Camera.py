@@ -1,16 +1,12 @@
-# A simple script that uses blender to render views of a single object by rotation the camera around it.
-# Also produces depth map at the same time.
-#
-# Source: https://github.com/panmari/stanford-shapenet-renderer
-#
-# Example:
-# blender --background --python mytest.py -- --views 10 /path/to/my.obj
-#
 import bpy
+import numpy as np
+import modules.Blender.utils
 
 class Camera:
-    def __init__(self, scene, mode='oscillation'):
+    def __init__(self, scene, mode='oscillation', cam_dist=1.25, modulate_distance=False):
         self.mode = mode
+        self.cam_dist = cam_dist
+        self.modulate_distance = modulate_distance
 
         # Grab camera from scene
         cam = scene.objects['Camera']
@@ -57,3 +53,21 @@ class Camera:
 
     def update_target(self, azimuth_update):
         self.b_empty.rotation_euler[2] += azimuth_update
+
+    def update(self, azimuth_i):
+        if self.mode == 'oscillation':
+            self.cam_pos = modules.Blender.utils.euler_to_xyz(azimuth_i, normalize=True)
+            if self.modulate_distance:
+                cam_dist = modules.Blender.utils.modulate_cam_distance(azimuth_i)
+            else:
+                cam_dist = self.cam_dist
+
+            self.set_position(cam_dist * self.cam_pos)
+        elif self.mode == 'random':
+            # Randomly select new radius and position
+            rand_cam_dist = np.random.uniform(1.5, 7.5)
+            self.cam_pos = np.random.uniform(0, 1, size=3)
+            # Normalize
+            self.cam_pos /= float(np.sqrt(np.sum(self.cam_pos**2)))
+            random_position = rand_cam_dist * self.cam_pos
+            self.set_position(random_position)

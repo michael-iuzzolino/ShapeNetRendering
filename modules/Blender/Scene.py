@@ -1,4 +1,5 @@
 import bpy
+import numpy as np
 
 _LAMP_2_ENERGY = 0.05 # 0.015
 
@@ -8,7 +9,7 @@ def setup(args):
         bpy.context.scene.render.engine = args.render_engine.upper()
     except:
         bpy.context.scene.render.engine = "BLENDER_RENDER"
-    
+
     scene = bpy.context.scene
     scene.render.resolution_x = args.resolution
     scene.render.resolution_y = args.resolution
@@ -17,7 +18,12 @@ def setup(args):
     return scene
 
 class Lights:
-    def __init__(self):
+    def __init__(self, mode, lamp_radius=5.0):
+        self.mode = mode
+        self.lamp_radius = lamp_radius
+        self._setup_lamps()
+
+    def _setup_lamps(self):
         self.lamps = {}
         self._setup_point_lamp()
         self._setup_hemi_lamp()
@@ -52,9 +58,24 @@ class Lights:
         hemi_lamp.use_specular = False
         self.lamps['hemi'] = hemi_lamp
 
-    def move(self, new_position):
+    def _move(self, new_position):
         lamp = bpy.data.objects['Point']
         lamp.location = new_position
+
+    def update(self, cam_position):
+        if self.mode == 'follow_camera':
+            new_lamp_position = self.lamp_radius * np.array(cam_position)
+            self._move(new_lamp_position)
+        elif self.mode == 'random':
+            # Randomly select new radius and position
+            rand_lamp_radius = np.random.uniform(1.5, 7.5)
+            rand_pos = np.random.uniform(0, 1, size=3)
+            # Normalize
+            rand_pos /= float(np.sqrt(np.sum(rand_pos**2)))
+            random_position = rand_lamp_radius * rand_pos
+            self._move(random_position)
+        elif self.mode == 'stationary':
+            pass
 
 class Sensors:
     def __init__(self, args):
