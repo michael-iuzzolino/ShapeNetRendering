@@ -47,7 +47,38 @@ class ModelHandler:
         emission_mat = self._make_emission_material()
         self._set_material(objects, emission_mat)
 
+        """ Currently broken - just use blender_render for segmentation """
+        # if self.args.render_mode == 'CYCLES':
+        #     self._create_emission_nodes(objects)
+        # else:
+        #     emission_mat = self._make_emission_material()
+        #     self._set_material(objects, emission_mat)
+
         return objects
+
+    def _create_emission_nodes(self, objects):
+        """
+            # CURRENTLY BROKEN!
+        """
+        for object in objects:
+            old_materials = object.data.materials
+            old_materials.clear()
+
+            # Create a new material
+            material = bpy.data.materials.new(name="Plane Light Emission Shader")
+            material.use_nodes = True
+
+            # Remove default
+            material.node_tree.nodes.remove(material.node_tree.nodes.get('Diffuse BSDF'))
+            material_output = material.node_tree.nodes.get('Material Output')
+            emission = material.node_tree.nodes.new('ShaderNodeEmission')
+            emission.inputs['Strength'].default_value = 500.0
+
+            # link emission shader to material
+            material.node_tree.links.new(material_output.inputs[0], emission.outputs[0])
+
+            # set activer material to your new material
+            object.active_material = material
 
     def _set_material(self, objects, material):
         for object in objects:
