@@ -42,10 +42,13 @@ def combine_imgs(imgs):
         combined_imgs.append(row_img)
     return combined_imgs
 
-def read_image(path):
+def read_image(path, parse_mask=False):
     image = imageio.imread(path)
-    img_RGB = image[:,:,:3]
-    return img_RGB
+    if parse_mask and image.shape[-1] == 4:
+        image = (image[:,:,:3], image[:,:,3])
+    else:
+        image = image[:,:,:3]
+    return image
 
 def toAnimation(imgs, *args, **kwargs):
     animator = FrameAnimator(imgs, *args, **kwargs)
