@@ -34,11 +34,10 @@ def stack_all_imgs(all_imgs, nrow=2):
 
 def combine_imgs(imgs):
     combined_imgs = []
-    for img_i, (rgb, seg) in enumerate(imgs):
-        rgb_pt = torch.tensor(rgb).permute(2,0,1)
-        seg_pt = torch.tensor(seg).permute(2,0,1)
-        padding = int(rgb_pt.shape[1]*0.01)
-        row_img = make_grid(torch.stack([rgb_pt, seg_pt], axis=0), pad_value=255, padding=padding)
+    for imgs_i in imgs:
+        imgs_pt = [torch.tensor(im).permute(2,0,1) for im in imgs_i]
+        padding = int(imgs_pt[0].shape[1]*0.01)
+        row_img = make_grid(torch.stack(imgs_pt, axis=0), pad_value=255, padding=padding)
         row_img = row_img.permute(1,2,0).numpy()
         combined_imgs.append(row_img)
     return combined_imgs
@@ -47,14 +46,6 @@ def read_image(path):
     image = imageio.imread(path)
     img_RGB = image[:,:,:3]
     return img_RGB
-
-def read_image_BACKUP(path, same_size=True):
-    image = imageio.imread(path)
-    img_RGB = image[:,:,:3]
-    img_segmentation = image[:,:,3]
-    if same_size:
-        img_segmentation = np.repeat(img_segmentation[..., np.newaxis], img_RGB.shape[-1], axis=2)
-    return img_RGB, img_segmentation
 
 def toAnimation(imgs, *args, **kwargs):
     animator = FrameAnimator(imgs, *args, **kwargs)
