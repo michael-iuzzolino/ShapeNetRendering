@@ -30,15 +30,17 @@ class OcclusionHandler:
 
     def _setup(self):
         if self.active:
-            self.objs = [OccluderObj(self.unique_rgb_colors[i]) for i in range(self.num_occlusions)]
+            self.objs = [OccluderObj(i, self.unique_rgb_colors[i]) for i in range(self.num_occlusions)]
         else:
             self.objs = []
 
     def colorize_materials(self):
+        """ Materials for RGB occlusion render """
         for obj in self.objs:
             obj.set_material('color')
 
     def emission_materials(self):
+        """ Materials for instance segmentation render """
         for obj in self.objs:
             obj.set_material('emission')
 
@@ -50,8 +52,15 @@ class OcclusionHandler:
         for obj in self.objs:
             obj.show()
 
+    def get_colors(self):
+        colors = {obj.id : obj.semantic_rgb_color for obj in self.objs}
+        return colors
+
 class OccluderObj:
-    def __init__(self, rgb_color):
+    def __init__(self, id, rgb_color):
+        self.id = 'Object_{}'.format(id)
+        self.semantic_rgb_color = rgb_color
+
         self._create_object()
         self._generate_materials(rgb_color)
         self.set_material('transparent')
@@ -77,13 +86,15 @@ class OccluderObj:
         transparent_mat.transparency_method = 'MASK'
         transparent_mat.alpha = 0
 
+        # RGB occlusion render
         color_mat = bpy.data.materials.new(name="Material")
-        color_mat.diffuse_color = (rgb_color)
+        color_mat.diffuse_color = rgb_color
         color_mat.diffuse_shader = 'LAMBERT'
-        color_mat.diffuse_intensity = 1.0
+        color_mat.diffuse_intensity = 0.5
 
+        # Instance segmentation colors
         emission_mat = bpy.data.materials.new(name="Material")
-        emission_mat.diffuse_color = (rgb_color)
+        emission_mat.diffuse_color = rgb_color
         emission_mat.diffuse_shader = 'LAMBERT'
         emission_mat.use_shadeless = True
 

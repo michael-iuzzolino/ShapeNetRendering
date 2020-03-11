@@ -3,10 +3,10 @@ import glob
 import numpy as np
 
 class ModelHandler:
-    def __init__(self, args, target):
+    def __init__(self, args, target, semantic_rgb_color=[1.0,1.0,1.0]):
         self.args = args
         self.target = target
-        self.semantic_rgb_color = [1.0, 1.0, 1.0]
+        self.semantic_rgb_color = semantic_rgb_color
 
         # Load model - specify as RGB model
         RGB_model = self._import_model_obj(args, target=target)

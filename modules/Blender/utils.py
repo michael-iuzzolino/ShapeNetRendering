@@ -1,5 +1,6 @@
 import os
 import math
+import json
 import numpy as np
 
 _CMAP = [[0.83106498, 0.23844675, 0.30880431],
@@ -21,6 +22,18 @@ _CMAP = [[0.83106498, 0.23844675, 0.30880431],
          [0.20622837, 0.52018454, 0.7349481 ],
          [0.28742791, 0.41499423, 0.68512111],
          [0.36862745, 0.30980392, 0.63529412]]
+
+def log_color_mapping(target_model, occlusions, output_folder):
+    # Generate colors
+    obj_color_mapping = occlusions.get_colors()
+    obj_color_mapping['Target'] = target_model.semantic_rgb_color
+
+    # Generate path
+    color_mapping_path = os.path.join(output_folder, "color_mapping.json")
+
+    # Write
+    with open(color_mapping_path, 'w') as outfile:
+        json.dump(obj_color_mapping, outfile)
 
 def setup_angles(args):
     # Azimuth
