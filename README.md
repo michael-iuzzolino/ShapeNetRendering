@@ -4,5 +4,5 @@ Developed with Blender2.79. See https://download.blender.org/release/Blender2.79
 
 
 # Example Output
-![](sample_render.gif)
+![](misc/gifs/sample_render.gif)
 

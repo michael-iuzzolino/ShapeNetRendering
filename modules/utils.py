@@ -1,3 +1,4 @@
+import os
 import imageio
 import cv2
 import json
@@ -12,6 +13,10 @@ matplotlib.rcParams['animation.embed_limit'] = 2**32
 import torch
 from torchvision.utils import make_grid
 
+def make_dir(dir_path, overwrite=False):
+    if not os.path.exists(dir_path) or overwrite:
+        os.makedirs(dir_path)
+        
 def add_labels_to_img(img, text, fontsize=5, x=0, y=50, text_color=None):
     img_i = np.copy(img)
     if text_color is None:
