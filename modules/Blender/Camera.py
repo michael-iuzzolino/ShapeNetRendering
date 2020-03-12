@@ -34,6 +34,9 @@ class Camera:
         scn.objects.active = b_empty
         return b_empty
 
+    def update_target(self, azimuth_update):
+        self.b_empty.rotation_euler[2] += azimuth_update
+
     def _look_at_origin(self):
         loc_camera = self.camera.matrix_world.to_translation()
 
@@ -51,9 +54,6 @@ class Camera:
         self.camera.location = camera_points
         self._look_at_origin()
 
-    def update_target(self, azimuth_update):
-        self.b_empty.rotation_euler[2] += azimuth_update
-
     def update(self, azimuth_i):
         if self.mode == 'oscillation':
             self.cam_pos = modules.Blender.utils.euler_to_xyz(azimuth_i, normalize=True)
@@ -62,7 +62,9 @@ class Camera:
             else:
                 cam_dist = self.cam_dist
 
-            self.set_position(cam_dist * self.cam_pos)
+            cam_translation = cam_dist * self.cam_pos
+            self.set_position(cam_translation)
+
         elif self.mode == 'random':
             # Randomly select new radius and position
             rand_cam_dist = np.random.uniform(1.5, 7.5)

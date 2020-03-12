@@ -1,5 +1,6 @@
 import imageio
 import cv2
+import json
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -10,6 +11,24 @@ matplotlib.rcParams['animation.embed_limit'] = 2**32
 
 import torch
 from torchvision.utils import make_grid
+
+def add_labels_to_img(img, text, fontsize=5, x=0, y=50, text_color=None):
+    img_i = np.copy(img)
+    if text_color is None:
+        text_color = [255, 255, 255]
+    cv2.putText(img_i, text, (x, y), 
+                cv2.FONT_HERSHEY_SIMPLEX, 
+                fontsize, 
+                text_color, 
+                thickness=3)
+
+    return img_i
+
+def load_imagenet_labels(imagenet_labels_root):
+    with open(imagenet_labels_root, 'r') as infile:
+        class_idx = json.load(infile)
+    idx2label = [class_idx[str(k)][1].lower() for k in range(len(class_idx))]
+    return idx2label
 
 def add_background(RGB_img, segmentation_img, background_img):
     mask = segmentation_img > 0
@@ -45,7 +64,10 @@ def combine_imgs(imgs):
 def read_image(path, parse_mask=False):
     image = imageio.imread(path)
     if parse_mask and image.shape[-1] == 4:
-        image = (image[:,:,:3], image[:,:,3])
+        img = image[:,:,:3]
+        mask = image[:,:,3:]
+        mask = np.repeat(mask, img.shape[-1], axis=-1)
+        image = (img, mask)
     else:
         image = image[:,:,:3]
     return image

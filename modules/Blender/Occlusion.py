@@ -16,11 +16,9 @@ import numpy as np
 from modules.Blender.utils import _CMAP
 
 class OcclusionHandler:
-    def __init__(self, args):
-        self.args = args
-        self.active = args.occlude
-        self.num_occlusions = args.n_occlusions
-        self._generate_unique_rgb_colors()
+    def __init__(self, num_occlusions):
+        self.active = num_occlusions > 0
+        self.num_occlusions = num_occlusions
         self._setup()
 
     def _generate_unique_rgb_colors(self):
@@ -30,6 +28,7 @@ class OcclusionHandler:
 
     def _setup(self):
         if self.active:
+            self._generate_unique_rgb_colors()
             self.objs = [OccluderObj(i, self.unique_rgb_colors[i]) for i in range(self.num_occlusions)]
         else:
             self.objs = []

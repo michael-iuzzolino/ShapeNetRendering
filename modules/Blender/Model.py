@@ -1,5 +1,6 @@
 import bpy
 import glob
+import mathutils
 import numpy as np
 
 class ModelHandler:
@@ -19,6 +20,7 @@ class ModelHandler:
 
         # Assign models to lookup
         self.model_objects = {"RGB_model" : RGB_model, "emission_model" : emission_model}
+        self.prev_translation = None
 
     def _make_emission_model(self):
         bpy.ops.object.duplicate_move(OBJECT_OT_duplicate={"linked":False, "mode":'TRANSLATION'},
@@ -149,10 +151,24 @@ class ModelHandler:
                 bpy.context.object.modifiers["EdgeSplit"].split_angle = 1.32645
                 bpy.ops.object.modifier_apply(apply_as='DATA', modifier="EdgeSplit")
 
+    def translate(self):
+        rand_pos = lambda : np.random.uniform(-0.25, 0.25)
+        translation_delta = mathutils.Vector((rand_pos(), rand_pos(), rand_pos()))
+
+        if self.prev_translation is not None:
+            for model_key, model_objects in self.model_objects.items():
+                for object in model_objects:
+                    object.location -= self.prev_translation
+
+        for model_key, model_objects in self.model_objects.items():
+            for object in model_objects:
+                object.location += translation_delta
+
+        self.prev_translation = translation_delta
+
     def hide(self, model_key):
         for obj in self.model_objects[model_key]:
             obj.hide_render = True
-
 
     def show(self, model_key):
         for obj in self.model_objects[model_key]:
