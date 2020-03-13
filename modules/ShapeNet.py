@@ -7,11 +7,12 @@ import modules.utils
 from torch.utils.data import Dataset
 
 class Dataset(Dataset):
-    def __init__(self, root, resize=True, dim=256, transforms=None):
+    def __init__(self, root, background_handler=None, background_active=True, mode_key='generate', transforms=None):
         super().__init__()
         self.root = root
-        self.resize = resize
-        self.dim = dim
+        self.background_handler = background_handler
+        self.mode_key = mode_key
+        self.background_active = background_active
         self.transforms = transforms
         
         self._setup_paths()
@@ -24,8 +25,8 @@ class Dataset(Dataset):
         return class_id, instance_id
     
     def _setup_paths(self):
-        print(f"Building image filepaths from {self.root}...")        
-        self.filepaths = glob.glob(f'{self.root}/*/*')
+        print(f"Building shapenet data filepaths from {self.root}...")
+        self.filepaths = glob.glob(f'{self.root}/{self.mode_key}/BLENDER_RENDER/*/*/*_target.png')
         print("Path setup complete.")
         
     def __len__(self):
@@ -33,8 +34,6 @@ class Dataset(Dataset):
 
     def _load_img(self, path):
         img = imageio.imread(path)
-        if self.resize:
-            img = cv2.resize(img, (self.dim, self.dim))
         return img
     
     def __getitem__(self, idx):
@@ -42,14 +41,24 @@ class Dataset(Dataset):
         path_i = self.filepaths[idx]
         
         # Image
-        img = modules.utils.read_image(path_i, parse_mask=False)
+        img, mask = modules.utils.read_image(path_i, parse_mask=True)
+        
+        if self.background_active:
+            # Sample background image
+            background_img = self.background_handler.sample(img.shape)
+
+            # Add background image
+            img = modules.utils.add_background(img, mask, background_img)
+        
+        # Labels
+        class_id, instance_id = self._get_path_info(path_i)
         
         if self.transforms:
             img = self.transforms(img)
             
-        return img, path_i
+        return img, class_id, instance_id
     
-class ShapeNetHandler(object):
+class Handler(object):
     def __init__(self, root):
         self.root = root
         
