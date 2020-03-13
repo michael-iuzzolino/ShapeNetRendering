@@ -21,6 +21,7 @@ class BackgroundHandler:
         labels_path = os.path.join(self.labels_root, f'{self.eval_model}.json')
         with open(labels_path, 'r') as infile:
             load_data = json.load(infile)
+        
         self.path_to_labels = {ele[2] : {"idx" : ele[0], "name" : ele[1]} for ele in load_data}
      
         return self.original_img_paths

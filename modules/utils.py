@@ -11,7 +11,12 @@ from IPython.display import HTML
 matplotlib.rcParams['animation.embed_limit'] = 2**32
 
 import torch
+import torch.nn as nn
 from torchvision.utils import make_grid
+
+
+get_prediction_idxs = lambda out : torch.argmax(nn.Softmax(dim=1)(out), dim=1)
+
 
 def make_dir(dir_path, overwrite=False):
     if not os.path.exists(dir_path) or overwrite:

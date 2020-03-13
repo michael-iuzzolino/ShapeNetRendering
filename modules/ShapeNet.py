@@ -7,13 +7,16 @@ import modules.utils
 from torch.utils.data import Dataset
 
 class Dataset(Dataset):
-    def __init__(self, root, background_handler=None, background_active=True, mode_key='generate', transforms=None):
+    def __init__(self, root, background_handler=None, 
+                 background_active=True, mode_key='generate', 
+                 transforms=None, debug=False):
         super().__init__()
         self.root = root
         self.background_handler = background_handler
         self.mode_key = mode_key
         self.background_active = background_active
         self.transforms = transforms
+        self.debug = debug
         
         self._setup_paths()
     
@@ -53,6 +56,10 @@ class Dataset(Dataset):
         # Labels
         class_id, instance_id = self._get_path_info(path_i)
         
+        if self.debug:
+            img = self.background_handler.sample(img.shape)
+            
+            
         if self.transforms:
             img = self.transforms(img)
             
