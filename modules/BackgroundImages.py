@@ -51,7 +51,9 @@ class BackgroundHandler:
                     img_in_classes_specified = True
                     break
             
-            if mode == 'include':
+            if not classes_specified:
+                filtered_img_paths.append(img_path)
+            elif mode == 'include':
                 if img_in_classes_specified:
                     filtered_img_paths.append(img_path)
             elif mode == 'exclude':

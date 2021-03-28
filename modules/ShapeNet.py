@@ -90,21 +90,27 @@ class Handler(object):
 
     def _load_taxonomy(self):
         self.taxonomy_filepath = os.path.join(self.root, 'taxonomy.json')
+        print(f"Loading taxonomy from {self.taxonomy_filepath}...")
         with open(self.taxonomy_filepath, 'r') as infile:
             self.taxonomy = json.load(infile)
-            
+        
+        print("Building synset to name lookup.")
         self.synset_to_name_lookup = {ele['synsetId'] : {"names" : ele['name'], "imagenet_idx" : None} for ele in self.taxonomy}
     
     def _setup_folders(self):
+        print("Setting up model folders")
         self.model_folders = [ele for ele in glob.glob(f'{self.root}/*') if 'json' not in ele]
         
         self.objs_paths = {}
-        for model_folder in self.model_folders:
+        for i, model_folder in enumerate(self.model_folders):
+            sys.stdout.write(f'\rLoading folder {model_folder} [{i+1}/{len(self.model_folders)}]...')
+            sys.stdout.flush()
             synsetID = os.path.basename(model_folder)
             model_name = self.synset_to_name_lookup[synsetID]["names"]
             obj_paths = glob.glob(f'{model_folder}/*/models/*.obj')
             self.objs_paths[synsetID] = obj_paths
-     
+        print("\n")
+        
     def lookup_name(self, synset_id):
         try:
             synset_id = int(synset_id)
